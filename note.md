@@ -2,13 +2,21 @@
 
 The 5.7 Project is a weather forecast app that pulls real data from the **OpenWeatherMap REST API**. Unlike the earlier Open-Meteo version, OpenWeatherMap uses **API KEY authorization**: every request must carry the key or the API answers with `401 Unauthorized`.
 
-The key is stored in `config.js`:
+The key lives in a `.env` file (never in committed code):
 
-```js
-export const OPENWEATHER_API_KEY = "PASTE_YOUR_OPENWEATHER_API_KEY_HERE";
+```
+OPENWEATHER_API_KEY=PASTE_YOUR_OPENWEATHER_API_KEY_HERE
 ```
 
-Get a free key at https://home.openweathermap.org/api_keys and paste it in. The key is never exposed to the browser — only the server sends it.
+Get a free key at https://home.openweathermap.org/api_keys and put it in `.env`. The `dotenv` package loads that file into `process.env`, and `config.js` re-exports it:
+
+```js
+import "dotenv/config";
+
+export const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
+```
+
+`.env` is listed in `.gitignore`, so the key stays out of git history; `.env.example` is committed as a template. Anyone cloning the project copies `.env.example` to `.env` and fills in their own key. The key is never exposed to the browser — only the server sends it.
 
 ## The REST Endpoints Used
 
@@ -50,7 +58,7 @@ const forecastUrl = (lat, lon) =>
 
 `ensureApiKey()` in `index.js` checks the key was actually filled in and gives a friendly message if it wasn't. `apiErrorMessage()` maps REST error responses (HTTP status + JSON body) to readable messages:
 
-- `401` → "Invalid API key. Check OPENWEATHER_API_KEY in config.js."
+- `401` → "Invalid API key. Check OPENWEATHER_API_KEY in your .env file."
 - `404` → OpenWeatherMap's own message like "city not found"
 
 ## How the Requests Are Made (server side)
